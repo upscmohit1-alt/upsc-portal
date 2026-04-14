@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --black: #111010;
+  --dark: #1c1b1a;
+  --mid: #4a4846;
+  --muted: #8c8a87;
+  --border: #e2dfda;
+  --bg: #faf9f6;
+  --bg2: #f3f1ec;
+  --red: #c0392b;
+  --red-light: #fdf2f1;
+  --saffron: #e07b2a;
+  --saffron-light: #fef3e8;
+  --green: #1a6b3a;
+  --green-light: #edf7f1;
+  --blue: #1a4f8a;
+  --blue-light: #edf3fb;
+  --purple: #4a3080;
+  --purple-light: #f0edf9;
+  --teal: #0e6b5a;
+  --teal-light: #e8f6f3;
+}
+
+.dark {
+  --black: #f4f1eb;
+  --dark: #f2efe8;
+  --mid: #c9c2b5;
+  --muted: #9f9789;
+  --border: #3c372f;
+  --bg: #12100e;
+  --bg2: #1b1815;
+  --red: #df6a59;
+  --red-light: #2b1715;
+  --saffron: #e59a58;
+  --saffron-light: #2b2118;
+  --green: #47b97a;
+  --green-light: #16261e;
+  --blue: #74a9ea;
+  --blue-light: #172230;
+  --purple: #a58ad9;
+  --purple-light: #231b32;
+  --teal: #58b8a6;
+  --teal-light: #162824;
+}
+
+body {
+  background: var(--bg);
+  color: var(--black);
+}
+
+body,
+body * {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-duration: 300ms;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
