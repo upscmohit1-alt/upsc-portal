@@ -1,7 +1,6 @@
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-
 const links = ["Home", "GS Notes", "Current Affairs", "MCQ Practice", "PYQ", "Test Series", "Books & PDFs"];
 
 export default function Navbar() {
@@ -30,7 +29,7 @@ export default function Navbar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2.5">
-            <button className="p-1.5 text-mid hover:text-blackish" aria-label="Search">
+          <button className="p-1.5 text-mid hover:text-blackish" aria-label="Search">
             <Search className="h-4 w-4" />
           </button>
           <Button variant="outline" className="h-8 px-3.5 text-[13px] font-medium">
