@@ -5,8 +5,8 @@ const links = ["Home", "GS Notes", "Current Affairs", "MCQ Practice", "PYQ", "Te
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 border-b-[3px] border-blackish/90 bg-white/75 backdrop-blur-md">
-      <div className="mx-auto flex h-[62px] max-w-[1240px] items-center px-6">
+    <header className="sticky top-0 z-50 border-b-[3px] border-blackish/90 bg-[#f7f1e8]/90 backdrop-blur-md">
+      <div className="mx-auto flex h-[62px] max-w-[1200px] items-center px-6">
         <div className="mr-6 border-r border-borderTone pr-7">
           <div className="font-serif text-xl font-bold leading-none text-blackish">
             Crash Course <em className="not-italic text-red">Civil Services</em>

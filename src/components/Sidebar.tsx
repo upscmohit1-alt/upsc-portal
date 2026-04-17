@@ -1,9 +1,10 @@
 import { Upload } from "@/components/ui/upload";
+import GamificationAnalytics from "@/components/GamificationAnalytics";
 
 export default function Sidebar() {
   return (
     <aside className="space-y-6">
-      <div className="overflow-hidden rounded border border-borderTone/80 bg-white/75 backdrop-blur-md">
+      <div className="overflow-hidden rounded border border-white/20 bg-white/40 shadow-xl backdrop-blur-md">
         <div className="border-b border-borderTone bg-bg2 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
           My Progress
         </div>
@@ -41,16 +42,18 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <div className="rounded border border-white/10 bg-blackish/85 p-4 text-center backdrop-blur-md">
-        <h3 className="font-serif text-lg font-bold text-white">Daily Current Affairs</h3>
-        <p className="mb-3 mt-1 text-xs text-white/55">Get today&apos;s articles + MCQs in your inbox every morning.</p>
-        <input className="mb-2 w-full rounded border-0 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40" placeholder="Your email address" />
+      <GamificationAnalytics />
+
+      <div className="rounded border border-white/20 bg-white/40 p-4 text-center shadow-xl backdrop-blur-md">
+        <h3 className="font-serif text-lg font-bold text-blackish">Daily Current Affairs</h3>
+        <p className="mb-3 mt-1 text-xs text-mid">Get today&apos;s articles + MCQs in your inbox every morning.</p>
+        <input className="mb-2 w-full rounded border border-white/25 bg-white/40 px-3 py-2 text-sm text-blackish placeholder:text-muted" placeholder="Your email address" />
         <button className="w-full rounded bg-saffron px-3 py-2 text-sm font-semibold text-white hover:bg-[#c06a20]">
           Subscribe — It&apos;s Free
         </button>
       </div>
 
-      <div className="overflow-hidden rounded border border-borderTone/80 bg-white/75 backdrop-blur-md">
+      <div className="overflow-hidden rounded border border-white/20 bg-white/40 shadow-xl backdrop-blur-md">
         <div className="border-b border-borderTone bg-bg2 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
           Mains Answer Upload
         </div>

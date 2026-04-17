@@ -19,23 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var saved = localStorage.getItem('theme');
-                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  var useDark = saved ? saved === 'dark' : prefersDark;
-                  document.documentElement.classList.toggle('dark', useDark);
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
+    <html lang="en">
       <body className={`${lora.variable} ${sourceSans3.variable} font-sans antialiased transition-colors duration-300`}>
         {children}
       </body>
