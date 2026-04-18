@@ -4,30 +4,34 @@ import Anthropic from '@anthropic-ai/sdk'
 import { supabase } from '@/lib/supabase'
 
 const parser = new Parser()
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// All your RSS sources
 const RSS_FEEDS = [
-  { name: 'The Hindu',         url: 'https://www.thehindu.com/news/national/feeder/default.rss' },
-  { name: 'Indian Express',    url: 'https://indianexpress.com/feed/' },
-  { name: 'LiveMint',          url: 'https://www.livemint.com/rss/news' },
-  { name: 'PIB',               url: 'https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3' },
-  { name: 'BBC India',         url: 'https://feeds.bbci.co.uk/news/india/rss.xml' },
-  { name: 'Down To Earth',     url: 'https://www.downtoearth.org/rss/content' },
-  { name: 'Frontline',         url: 'https://frontline.thehindu.com/rss/' },
-  { name: 'Hindustan Times',   url: 'https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml' },
-  { name: 'Times of India',    url: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms' },
-  { name: 'Economic Times',    url: 'https://economictimes.indiatimes.com/rssfeedstopstories.cms' },
+  { name: 'The Hindu',       url: 'https://www.thehindu.com/news/national/feeder/default.rss' },
+  { name: 'Indian Express',  url: 'https://indianexpress.com/feed/' },
+  { name: 'LiveMint',        url: 'https://www.livemint.com/rss/news' },
+  { name: 'PIB',             url: 'https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3' },
+  { name: 'BBC India',       url: 'https://feeds.bbci.co.uk/news/world/asia/india/rss.xml' },
+  { name: 'Down To Earth',   url: 'https://www.downtoearth.org.in/rss' },
+  { name: 'Frontline',       url: 'https://frontline.thehindu.com/rss/feeder/default.rss' },
+  { name: 'Hindustan Times', url: 'https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml' },
+  { name: 'Times of India',  url: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms' },
+  { name: 'Economic Times',  url: 'https://economictimes.indiatimes.com/rssfeedstopstories.cms' },
 ]
 
-// Step 1: Fetch and save all RSS items
 async function fetchAndSaveRSS() {
-  const allItems: any[] = []
+  const allItems: {
+    url: string
+    title: string
+    source: string
+    raw_content: string
+    published_at: string
+    status: string
+  }[] = []
 
   for (const feed of RSS_FEEDS) {
     try {
       const parsed = await parser.parseURL(feed.url)
-      for (const item of parsed.items.slice(0, 20)) { // latest 20 per source
+      for (const item of parsed.items.slice(0, 20)) {
         allItems.push({
           url: item.link || '',
           title: item.title || '',
@@ -42,12 +46,10 @@ async function fetchAndSaveRSS() {
     }
   }
 
-  // Save to Supabase, skip duplicates by URL
   await supabase
     .from('rss_items')
     .upsert(allItems, { onConflict: 'url', ignoreDuplicates: true })
 
-  // Also pick up any existing unprocessed items
   const { data } = await supabase
     .from('rss_items')
     .select()
@@ -57,9 +59,15 @@ async function fetchAndSaveRSS() {
   return data || []
 }
 
-// Step 2: Score and cluster with Claude
-async function scoreAndCluster(items: any[]) {
+async function scoreAndCluster(items: {
+  url: string
+  title: string
+  source: string
+  raw_content: string
+}[]) {
   if (items.length === 0) return
+
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
   const headlines = items
     .map((item, i) => `${i}. [${item.source}] ${item.title}`)
@@ -95,7 +103,15 @@ Only include clusters with relevance_score >= 7. No other text.`
 
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
 
-  let clusters: any[] = []
+  let clusters: {
+    headline: string
+    summary: string
+    category: string
+    gs_paper: string
+    relevance_score: number
+    item_indices: number[]
+  }[] = []
+
   try {
     clusters = JSON.parse(raw.replace(/```json|```/g, '').trim())
   } catch {
@@ -103,14 +119,13 @@ Only include clusters with relevance_score >= 7. No other text.`
     return
   }
 
-  // Save each cluster to story_clusters table
   for (const cluster of clusters) {
-    const clusterItems = cluster.item_indices.map((i: number) => items[i]).filter(Boolean)
+    const clusterItems = cluster.item_indices.map((i) => items[i]).filter(Boolean)
     if (clusterItems.length === 0) continue
 
-    const sources = [...new Set(clusterItems.map((i: any) => i.source))] as string[]
-    const urls = clusterItems.map((i: any) => i.url) as string[]
-    const combined = clusterItems.map((i: any) => `[${i.source}]\n${i.title}\n${i.raw_content}`).join('\n\n---\n\n')
+    const sources = [...new Set(clusterItems.map((i) => i.source))]
+    const urls = clusterItems.map((i) => i.url)
+    const combined = clusterItems.map((i) => `[${i.source}]\n${i.title}\n${i.raw_content}`).join('\n\n---\n\n')
 
     await supabase.from('story_clusters').insert({
       headline: cluster.headline,
@@ -124,15 +139,14 @@ Only include clusters with relevance_score >= 7. No other text.`
       status: 'pending'
     })
 
-    // Mark rss_items as relevant
-    const itemUrls = clusterItems.map((i: any) => i.url)
+    const itemUrls = clusterItems.map((i) => i.url)
     await supabase.from('rss_items').update({ status: 'relevant' }).in('url', itemUrls)
   }
+
+  console.log(`Created ${clusters.length} clusters`)
 }
 
-// Main handler
 export async function GET(request: Request) {
-  // Basic security — only Vercel cron or you can trigger this
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

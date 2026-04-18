@@ -3,8 +3,8 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET() {
   const { data, error } = await supabase
-    .from('content_drafts')
-    .select('*, story_clusters(headline, sources)')
+    .from('story_clusters')
+    .select('*')
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
 
