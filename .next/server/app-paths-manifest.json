@@ -1,21 +1,3 @@
 {
-  "/api/admin/auth/route": "app/api/admin/auth/route.js",
-  "/api/admin/clusters/[id]/route": "app/api/admin/clusters/[id]/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/admin/drafts/route": "app/api/admin/drafts/route.js",
-  "/api/admin/prompts/route": "app/api/admin/prompts/route.js",
-  "/api/admin/clusters/route": "app/api/admin/clusters/route.js",
-  "/api/admin/manual/route": "app/api/admin/manual/route.js",
-  "/api/admin/daily/route": "app/api/admin/daily/route.js",
-  "/api/admin/prompts/[id]/route": "app/api/admin/prompts/[id]/route.js",
-  "/api/cron/fetch-rss/route": "app/api/cron/fetch-rss/route.js",
-  "/api/analytics/me/route": "app/api/analytics/me/route.js",
-  "/api/admin/drafts/[id]/route": "app/api/admin/drafts/[id]/route.js",
-  "/admin/page": "app/admin/page.js",
-  "/auth/page": "app/auth/page.js",
-  "/page": "app/page.js",
-  "/daily-current-affairs/[date]/page": "app/daily-current-affairs/[date]/page.js",
-  "/daily-current-affairs/page": "app/daily-current-affairs/page.js",
-  "/daily-mcqs/page": "app/daily-mcqs/page.js",
-  "/daily-mcqs/[date]/page": "app/daily-mcqs/[date]/page.js"
+  "/page": "app/page.js"
 }
