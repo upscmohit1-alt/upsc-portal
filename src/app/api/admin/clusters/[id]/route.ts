@@ -2,53 +2,54 @@ import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import Anthropic from '@anthropic-ai/sdk'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const { action } = await request.json()
+  const { action, contentType } = await request.json()
   const { id } = params
 
-  await supabase.from('story_clusters').update({ status: action }).eq('id', id)
+  if (action === 'rejected') {
+    await supabase.from('story_clusters').update({ status: 'rejected' }).eq('id', id)
+    return NextResponse.json({ success: true })
+  }
 
   if (action === 'approved') {
+    await supabase.from('story_clusters').update({ status: 'approved' }).eq('id', id)
     const { data: cluster } = await supabase.from('story_clusters').select('*').eq('id', id).single()
-    if (cluster) {
-      generateContent(cluster) // fire and forget
-    }
+    if (cluster) generateContent(cluster, contentType)
   }
 
   return NextResponse.json({ success: true })
 }
 
-async function generateContent(cluster: any) {
+async function generateContent(cluster: {
+  id: string
+  headline: string
+  combined_content: string
+  category: string
+  gs_paper: string
+}, contentType: string) {
   try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+
+    // Fetch the right prompt from Supabase
+    const { data: promptRow } = await supabase
+      .from('prompts')
+      .select('prompt_text')
+      .eq('content_type', contentType)
+      .single()
+
+    const promptText = promptRow?.prompt_text || 'Write a UPSC article in English based on this news. Respond with JSON: {"daily_news": "article", "mcqs": []}'
+
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4000,
       messages: [{
         role: 'user',
-        content: `You are a UPSC content expert. Based on this news story, create:
-1. A structured daily news article for UPSC aspirants (400-500 words) with sections: What Happened, Background, Significance for UPSC, Key Facts to Remember
-2. Exactly 5 MCQs with 4 options each, correct answer index (0-3), and explanation
+        content: `${promptText}
 
 News Story:
 ${cluster.combined_content}
 
-Category: ${cluster.category}
-GS Paper: ${cluster.gs_paper}
-
-Respond ONLY with this JSON (no other text):
-{
-  "daily_news": "full article text here",
-  "mcqs": [
-    {
-      "question": "...",
-      "options": ["A", "B", "C", "D"],
-      "correct_index": 0,
-      "explanation": "..."
-    }
-  ]
-}`
+GS Paper: ${cluster.gs_paper}`
       }]
     })
 
@@ -59,7 +60,7 @@ Respond ONLY with this JSON (no other text):
       cluster_id: cluster.id,
       daily_news: parsed.daily_news,
       mcqs: parsed.mcqs,
-      type: cluster.category,
+      type: contentType,
       status: 'pending'
     })
   } catch (err) {
