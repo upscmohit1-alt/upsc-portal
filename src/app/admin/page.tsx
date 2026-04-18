@@ -47,6 +47,9 @@ export default function AdminPage() {
   const [expandedDraft, setExpandedDraft] = useState<string | null>(null)
   const [editingPrompt, setEditingPrompt] = useState<string | null>(null)
   const [editedText, setEditedText] = useState('')
+  const [editingDraft, setEditingDraft] = useState<string | null>(null)
+  const [editedDraftText, setEditedDraftText] = useState('')
+  const [editedMcqs, setEditedMcqs] = useState<Draft['mcqs']>([])
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -113,6 +116,17 @@ export default function AdminPage() {
     else showToast('❌ Draft rejected')
     setDrafts(prev => prev.filter(d => d.id !== id))
     setActionLoading(null)
+  }
+
+  const handleSaveDraft = async (id: string) => {
+    await fetch(`/api/admin/drafts/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ daily_news: editedDraftText, mcqs: editedMcqs })
+    })
+    setDrafts(prev => prev.map(d => d.id === id ? { ...d, daily_news: editedDraftText, mcqs: editedMcqs } : d))
+    setEditingDraft(null)
+    showToast('✅ Draft saved!')
   }
 
   const handleManual = async () => {
@@ -216,29 +230,23 @@ export default function AdminPage() {
                     <div style={{ fontSize: 13, color: '#8899aa', marginBottom: 10, lineHeight: 1.6 }}>{cluster.summary}</div>
                     <div style={{ fontSize: 11, color: '#4a5568' }}>Sources: {cluster.sources?.join(' · ')}</div>
                   </div>
-
-                  {/* Action Buttons */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 140 }}>
-                    <button
-                      disabled={actionLoading === cluster.id + 'mains_article'}
+                    <button disabled={actionLoading === cluster.id + 'mains_article'}
                       onClick={() => handleCluster(cluster.id, 'approved', 'mains_article')}
                       style={{ background: '#1a3a5c', color: '#60a5fa', border: '1px solid #1e4a7c', padding: '9px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>
                       {actionLoading === cluster.id + 'mains_article' ? '...' : '📝 Mains Article'}
                     </button>
-                    <button
-                      disabled={actionLoading === cluster.id + 'prelims_news'}
+                    <button disabled={actionLoading === cluster.id + 'prelims_news'}
                       onClick={() => handleCluster(cluster.id, 'approved', 'prelims_news')}
                       style={{ background: '#1a3a2a', color: '#4ade80', border: '1px solid #1e4a2e', padding: '9px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>
                       {actionLoading === cluster.id + 'prelims_news' ? '...' : '📋 Prelims News'}
                     </button>
-                    <button
-                      disabled={actionLoading === cluster.id + 'prelims_mcq'}
+                    <button disabled={actionLoading === cluster.id + 'prelims_mcq'}
                       onClick={() => handleCluster(cluster.id, 'approved', 'prelims_mcq')}
                       style={{ background: '#2a1f0a', color: '#f59e0b', border: '1px solid #4a3a1a', padding: '9px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>
                       {actionLoading === cluster.id + 'prelims_mcq' ? '...' : '❓ Prelims MCQs'}
                     </button>
-                    <button
-                      disabled={!!actionLoading}
+                    <button disabled={!!actionLoading}
                       onClick={() => handleCluster(cluster.id, 'rejected')}
                       style={{ background: '#1a0a0a', color: '#f87171', border: '1px solid #7f1d1d', padding: '9px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>
                       ❌ Reject
@@ -268,35 +276,123 @@ export default function AdminPage() {
                     </div>
                     <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 6 }}>{draft.story_clusters?.headline || 'Draft'}</div>
                     <div style={{ fontSize: 11, color: '#6b7a99', marginBottom: 12 }}>Sources: {draft.story_clusters?.sources?.join(' · ')}</div>
+
                     <button onClick={() => setExpandedDraft(expandedDraft === draft.id ? null : draft.id)}
                       style={{ background: 'none', border: '1px solid #1e2d4a', color: '#60a5fa', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
                       {expandedDraft === draft.id ? '▲ Hide Preview' : '▼ Preview Content'}
                     </button>
+
                     {expandedDraft === draft.id && (
                       <div style={{ marginTop: 16 }}>
+
+                        {/* Article Section */}
                         {draft.daily_news && (
                           <div style={{ background: '#0a0f1e', border: '1px solid #1e2d4a', borderRadius: 8, padding: 16, marginBottom: 12 }}>
-                            <div style={{ fontSize: 11, color: '#f59e0b', letterSpacing: 2, marginBottom: 10, textTransform: 'uppercase' }}>Article</div>
-                            <div style={{ fontSize: 13, color: '#c0cce0', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{draft.daily_news}</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                              <div style={{ fontSize: 11, color: '#f59e0b', letterSpacing: 2, textTransform: 'uppercase' }}>Article</div>
+                              {editingDraft !== draft.id && (
+                                <button onClick={() => { setEditingDraft(draft.id); setEditedDraftText(draft.daily_news); setEditedMcqs(draft.mcqs || []) }}
+                                  style={{ background: 'none', border: '1px solid #1e2d4a', color: '#60a5fa', padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 11 }}>
+                                  ✏️ Edit
+                                </button>
+                              )}
+                            </div>
+
+                            {editingDraft === draft.id ? (
+                              <textarea value={editedDraftText} onChange={e => setEditedDraftText(e.target.value)}
+                                rows={20}
+                                style={{ width: '100%', background: '#0f1829', border: '1px solid #f59e0b', color: '#e8e0d0', padding: 14, borderRadius: 6, fontSize: 13, lineHeight: 1.8, resize: 'vertical', boxSizing: 'border-box' }}
+                              />
+                            ) : (
+                              <div style={{ fontSize: 13, color: '#c0cce0', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{draft.daily_news}</div>
+                            )}
                           </div>
                         )}
+
+                        {/* MCQs Section */}
                         {draft.mcqs?.length > 0 && (
-                          <div style={{ background: '#0a0f1e', border: '1px solid #1e2d4a', borderRadius: 8, padding: 16 }}>
+                          <div style={{ background: '#0a0f1e', border: '1px solid #1e2d4a', borderRadius: 8, padding: 16, marginBottom: 12 }}>
                             <div style={{ fontSize: 11, color: '#f59e0b', letterSpacing: 2, marginBottom: 12, textTransform: 'uppercase' }}>MCQs ({draft.mcqs.length})</div>
-                            {draft.mcqs.map((mcq, i) => (
-                              <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < draft.mcqs.length - 1 ? '1px solid #1e2d4a' : 'none' }}>
-                                <div style={{ fontSize: 13, fontWeight: 600, color: '#e8e0d0', marginBottom: 8, whiteSpace: 'pre-wrap' }}>Q{i + 1}. {mcq.question}</div>
-                                {mcq.options?.map((opt, j) => (
-                                  <div key={j} style={{ fontSize: 12, color: j === mcq.correct_index ? '#4ade80' : '#8899aa', padding: '3px 0' }}>{String.fromCharCode(65 + j)}) {opt}</div>
+
+                            {editingDraft === draft.id ? (
+                              <div>
+                                {editedMcqs.map((mcq, i) => (
+                                  <div key={i} style={{ marginBottom: 20, padding: 14, background: '#0f1829', borderRadius: 8, border: '1px solid #1e2d4a' }}>
+                                    <div style={{ fontSize: 11, color: '#6b7a99', marginBottom: 8 }}>Question {i + 1}</div>
+                                    <textarea value={mcq.question} onChange={e => {
+                                      const updated = [...editedMcqs]
+                                      updated[i] = { ...updated[i], question: e.target.value }
+                                      setEditedMcqs(updated)
+                                    }} rows={3}
+                                      style={{ width: '100%', background: '#0a0f1e', border: '1px solid #1e2d4a', color: '#e8e0d0', padding: 10, borderRadius: 6, fontSize: 12, marginBottom: 10, boxSizing: 'border-box' }}
+                                    />
+                                    {mcq.options?.map((opt, j) => (
+                                      <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                        <span style={{ color: j === mcq.correct_index ? '#4ade80' : '#6b7a99', fontSize: 12, minWidth: 20 }}>{String.fromCharCode(65 + j)})</span>
+                                        <input value={opt} onChange={e => {
+                                          const updated = [...editedMcqs]
+                                          const newOptions = [...updated[i].options]
+                                          newOptions[j] = e.target.value
+                                          updated[i] = { ...updated[i], options: newOptions }
+                                          setEditedMcqs(updated)
+                                        }}
+                                          style={{ flex: 1, background: '#0a0f1e', border: `1px solid ${j === mcq.correct_index ? '#166534' : '#1e2d4a'}`, color: '#e8e0d0', padding: '6px 10px', borderRadius: 6, fontSize: 12 }}
+                                        />
+                                        <button onClick={() => {
+                                          const updated = [...editedMcqs]
+                                          updated[i] = { ...updated[i], correct_index: j }
+                                          setEditedMcqs(updated)
+                                        }}
+                                          style={{ background: j === mcq.correct_index ? '#166534' : '#1a0a0a', color: j === mcq.correct_index ? '#4ade80' : '#6b7a99', border: 'none', padding: '4px 8px', borderRadius: 4, cursor: 'pointer', fontSize: 10 }}>
+                                          {j === mcq.correct_index ? '✓ Correct' : 'Set'}
+                                        </button>
+                                      </div>
+                                    ))}
+                                    <div style={{ marginTop: 8 }}>
+                                      <div style={{ fontSize: 11, color: '#6b7a99', marginBottom: 4 }}>Explanation</div>
+                                      <textarea value={mcq.explanation} onChange={e => {
+                                        const updated = [...editedMcqs]
+                                        updated[i] = { ...updated[i], explanation: e.target.value }
+                                        setEditedMcqs(updated)
+                                      }} rows={2}
+                                        style={{ width: '100%', background: '#0a0f1e', border: '1px solid #1e2d4a', color: '#e8e0d0', padding: 10, borderRadius: 6, fontSize: 12, boxSizing: 'border-box' }}
+                                      />
+                                    </div>
+                                  </div>
                                 ))}
-                                <div style={{ fontSize: 12, color: '#60a5fa', marginTop: 8 }}>💡 {mcq.explanation}</div>
                               </div>
-                            ))}
+                            ) : (
+                              draft.mcqs.map((mcq, i) => (
+                                <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < draft.mcqs.length - 1 ? '1px solid #1e2d4a' : 'none' }}>
+                                  <div style={{ fontSize: 13, fontWeight: 600, color: '#e8e0d0', marginBottom: 8, whiteSpace: 'pre-wrap' }}>Q{i + 1}. {mcq.question}</div>
+                                  {mcq.options?.map((opt, j) => (
+                                    <div key={j} style={{ fontSize: 12, color: j === mcq.correct_index ? '#4ade80' : '#8899aa', padding: '3px 0' }}>{String.fromCharCode(65 + j)}) {opt}</div>
+                                  ))}
+                                  <div style={{ fontSize: 12, color: '#60a5fa', marginTop: 8 }}>💡 {mcq.explanation}</div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        )}
+
+                        {/* Edit action buttons */}
+                        {editingDraft === draft.id && (
+                          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                            <button onClick={() => handleSaveDraft(draft.id)}
+                              style={{ background: '#166534', color: '#4ade80', border: 'none', padding: '10px 20px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
+                              💾 Save Changes
+                            </button>
+                            <button onClick={() => setEditingDraft(null)}
+                              style={{ background: '#1a0a0a', color: '#f87171', border: '1px solid #7f1d1d', padding: '10px 20px', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
+                              Cancel
+                            </button>
                           </div>
                         )}
                       </div>
                     )}
                   </div>
+
+                  {/* Publish / Reject */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 110 }}>
                     <button disabled={actionLoading === draft.id} onClick={() => handleDraft(draft.id, 'approved')}
                       style={{ background: '#166534', color: '#4ade80', border: '1px solid #166534', padding: '10px 16px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>

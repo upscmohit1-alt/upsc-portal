@@ -29,3 +29,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   return NextResponse.json({ success: true })
 }
+
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const { daily_news, mcqs } = await request.json()
+  await supabase.from('content_drafts')
+    .update({ daily_news, mcqs })
+    .eq('id', params.id)
+  return NextResponse.json({ success: true })
+}
