@@ -1,11 +1,7 @@
 {
-  "/api/admin/daily/route": "app/api/admin/daily/route.js",
-  "/api/analytics/me/route": "app/api/analytics/me/route.js",
+  "/api/admin/drafts/route": "app/api/admin/drafts/route.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/admin/daily/page": "app/admin/daily/page.js",
-  "/daily-mcqs/[date]/page": "app/daily-mcqs/[date]/page.js",
-  "/daily-current-affairs/[date]/page": "app/daily-current-affairs/[date]/page.js",
-  "/daily-mcqs/page": "app/daily-mcqs/page.js",
-  "/daily-current-affairs/page": "app/daily-current-affairs/page.js",
-  "/page": "app/page.js"
+  "/api/admin/manual/route": "app/api/admin/manual/route.js",
+  "/page": "app/page.js",
+  "/admin/page": "app/admin/page.js"
 }
