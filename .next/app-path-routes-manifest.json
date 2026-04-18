@@ -1,0 +1,22 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/admin/auth/route": "/api/admin/auth",
+  "/api/admin/drafts/[id]/route": "/api/admin/drafts/[id]",
+  "/api/admin/clusters/[id]/route": "/api/admin/clusters/[id]",
+  "/api/admin/clusters/route": "/api/admin/clusters",
+  "/api/admin/daily/route": "/api/admin/daily",
+  "/api/admin/drafts/route": "/api/admin/drafts",
+  "/api/admin/manual/route": "/api/admin/manual",
+  "/api/admin/prompts/route": "/api/admin/prompts",
+  "/api/admin/prompts/[id]/route": "/api/admin/prompts/[id]",
+  "/api/analytics/me/route": "/api/analytics/me",
+  "/api/cron/fetch-rss/route": "/api/cron/fetch-rss",
+  "/admin/page": "/admin",
+  "/admin/daily/page": "/admin/daily",
+  "/auth/page": "/auth",
+  "/daily-current-affairs/page": "/daily-current-affairs",
+  "/daily-current-affairs/[date]/page": "/daily-current-affairs/[date]",
+  "/daily-mcqs/[date]/page": "/daily-mcqs/[date]",
+  "/daily-mcqs/page": "/daily-mcqs",
+  "/page": "/"
+}
