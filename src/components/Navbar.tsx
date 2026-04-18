@@ -1,9 +1,23 @@
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+'use client'
 
-const links = ["Home", "GS Notes", "Current Affairs", "MCQ Practice", "PYQ", "Test Series", "Books & PDFs"];
+import { Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/lib/auth-context'
+import { useRouter } from 'next/navigation'
+
+const links = ['Home', 'GS Notes', 'Current Affairs', 'MCQ Practice', 'PYQ', 'Test Series', 'Books & PDFs']
 
 export default function Navbar() {
+  const { user, profile, signOut } = useAuth()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/auth')
+  }
+
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email
+
   return (
     <header className="sticky top-0 z-50 border-b-[3px] border-blackish/90 bg-[#f7f1e8]/90 backdrop-blur-md">
       <div className="mx-auto flex h-[62px] max-w-[1200px] items-center px-6">
@@ -20,7 +34,7 @@ export default function Navbar() {
               key={link}
               href="#"
               className={`rounded-sm px-3 py-1.5 text-[13px] font-medium ${
-                index === 0 ? "text-red" : "text-mid hover:bg-bg2 hover:text-blackish"
+                index === 0 ? 'text-red' : 'text-mid hover:bg-bg2 hover:text-blackish'
               }`}
             >
               {link}
@@ -32,12 +46,38 @@ export default function Navbar() {
           <button className="p-1.5 text-mid hover:text-blackish" aria-label="Search">
             <Search className="h-4 w-4" />
           </button>
-          <Button variant="outline" className="h-8 px-3.5 text-[13px] font-medium">
-            Log in
-          </Button>
-          <Button className="h-8 bg-red px-4 text-[13px] hover:bg-[#a0302a]">Enroll Free →</Button>
+          {user ? (
+            <div className="flex items-center gap-2.5">
+              <span className="text-[13px] text-mid">Welcome, {displayName}</span>
+              <Button
+                variant="outline"
+                className="h-8 px-3.5 text-[13px] font-medium"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-8 px-3.5 text-[13px] font-medium"
+                onClick={() => router.push('/auth')}
+              >
+                Log in
+              </Button>
+              <Button
+                type="button"
+                className="h-8 bg-red px-4 text-[13px] hover:bg-[#a0302a]"
+                onClick={() => router.push('/auth')}
+              >
+                Enroll Free →
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
-  );
+  )
 }
