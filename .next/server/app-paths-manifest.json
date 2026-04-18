@@ -1,7 +1,5 @@
 {
-  "/api/admin/drafts/route": "app/api/admin/drafts/route.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/api/admin/manual/route": "app/api/admin/manual/route.js",
   "/page": "app/page.js",
   "/admin/page": "app/admin/page.js"
 }
